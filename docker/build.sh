@@ -2,10 +2,21 @@
 #
 # Build the docker images for rsyslog, logstash, splunk
 
-for TYPE in rsyslog; do
-docker build \
-  -t $TYPE \
-  --file="Dockerfile.$TYPE" \
-	--rm=true \
+## init ##
+IMAGES=$@
+if [ $# -eq 0 ]; then
+	echo "No arguments provided. Building all"
+	IMAGES='rsyslog logstash splunk'
+else
+	IMAGES=$@
+fi
+
+## build ##
+for IMAGE in $IMAGES; do
+  echo "Building image for $IMAGE"
+	docker build \
+  -t $IMAGE \
+  --force-rm=true \
+	--file="Dockerfile.$IMAGE" \
 	.
 done
