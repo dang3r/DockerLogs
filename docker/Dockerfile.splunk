@@ -3,6 +3,8 @@ FROM ubuntu
 MAINTAINER Daniel Cardoza <danielpcardoza@gmail.com>
 
 RUN apt-get -y update
-RUN apt-get -y install vim
+RUN apt-get -y install vim expect
+COPY splunklight-6.2.6-274160-linux-2.6-amd64.deb /tmp/
+COPY splunk.sh /tmp/
 
-
+ENTRYPOINT ["/tmp/splunk.sh"]
