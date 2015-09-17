@@ -9,10 +9,9 @@ STOCK_IMAGE="ubuntu"
 STATS="logs/stats.txt"
 rsyslog_log="/var/log/docker.log"
 logstash_log="/var/log/docker_ingest.log"
-
 DATE=$(date +%Y-%m-%d_%H_%M_%S)
-FS=$1
-PROTO=$2
+export FS=$1
+export PROTO=$2
 if [ $PROTO == "udp" ]; then
 		PORT=1337
 else
@@ -22,12 +21,13 @@ fi
 # Log the runtime metrics of a container to file
 # 1 : container name
 track_stats() {
+	set +x
 	mkdir -p logs
 	NAME=$1
-	STATS_FILE="logs/$1_stats_$DATE.txt"
+	STATS_FILE="logs/$1_$FS_$PROTO_$DATE.txt"
 	echo $FS PROTO >> $STATS_FILE	
 	while true; do
-		docker stats --no-stream=true $NAME | \
+		docker stats --no-stream=true $NAME 2> /dev/null | \
 				awk 'NR==2'  1>> $STATS_FILE 2>> /dev/null
 		( get_container_names	) | grep -q $NAME
 		ERROR=$?
@@ -36,6 +36,7 @@ track_stats() {
 		fi
 		sleep 1
 	done
+	set -x
 }
 
 # Return the IP of a container
@@ -49,23 +50,30 @@ get_container_names() {
 	docker inspect --format='{{.Name}}' $(docker ps -aq) 2> /dev/null
 }
 
+# Log function
+log_out() {
+	echo "$INFO : $@"
+}
 
-docker rm -f `docker ps -aq`
+docker rm -f `docker ps -aq` 2> /dev/null
 echo "Removing host splunk directory"
 sudo rm -r /tmp/splunk/
 mkdir /tmp/splunk/
 
 for IMAGE in splunk rsyslog logstash; do
-	echo "$IMAGE : Run logging container."
+	export INFO="$IMAGE $FS $PROTO"	
+	log_out "Run logging container."
 	CID=$(docker run -d --name $IMAGE -v /tmp/splunk/:/opt/splunk/:rw --privileged $IMAGE)
 	CIP=$(get_container_ip $CID)
-	sleep 15
 
-	echo "$IMAGE : Log runtime metrics"
+	log_out "Sleep image prep"
+	sleep 30
+
+	log_out "Log runtime metrics"
 	track_stats $IMAGE &
 	START=$(date +"%s")	
 
-	echo "$IMAGE : Run tenant containers."
+	log_out "Run tenant containers."
 	for i in {0..2}; do
 		NAME="test_$IMAGE_$i"
 		docker run \
@@ -80,7 +88,7 @@ for IMAGE in splunk rsyslog logstash; do
 		sleep 5
 	done
 
-	echo "$IMAGE : Wait for tenant container termination."
+	log_out "Wait for tenant container termination."
 	while true; do
 			if [ $(docker ps -q | wc -l) -eq 1 ]; then
 					break
@@ -88,7 +96,7 @@ for IMAGE in splunk rsyslog logstash; do
 			sleep 1
 	done
 	
-	echo "Expecting 3000003 messages for $IMAGE"
+	log_out "Expecting 3000003 messages for $IMAGE"
 	BASE="0"
 
 	# Retrieve, verify logs
@@ -106,7 +114,13 @@ for IMAGE in splunk rsyslog logstash; do
 				NEW=$(eval $CMD)
 				if [ "$NEW" == "$BASE" ]; then
 					END=$( date +"%s")
-					echo "$IMAGE : Retrieved $NEW messages for $IMAGE"
+
+					# In case no messages are retrieved
+					if [ -z "$NEW" ]; then
+							NEW="0"
+					fi
+
+					log_out "Retrieved $NEW messages for $IMAGE"
 					echo $FS $PROTO $IMAGE $NEW $(($END-$START)) >> $STATS
 					break
 				fi
@@ -114,8 +128,8 @@ for IMAGE in splunk rsyslog logstash; do
 				sleep 3
 	done
 
-	echo "$IMAGE : Removing all containers."
-	docker rm -f $IMAGE > /dev/null
-	docker rm -f $(docker ps -aq) > /dev/null
+	log_out "Removing all containers."
+	docker rm -f $IMAGE 2> /dev/null
+	docker rm -f $(docker ps -aq) 2> /dev/null
 
 done

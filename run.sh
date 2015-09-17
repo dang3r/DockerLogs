@@ -1,10 +1,8 @@
 #!/bin/bash
 #
 
-
-
 # Ensure no docker daemon is present
-for fs in aufs overlay; do
+for fs in $1; do
 	echo "$fs : Beginning test run"
 	docker daemon --storage-driver=$fs > /dev/null 2>&1 & 
 	DPID=$?
@@ -17,8 +15,10 @@ for fs in aufs overlay; do
 	for proto in tcp udp; do
 		echo "$fs $proto : Launching test suite"		
 		./test.sh $fs $proto
+		echo "$fs $proto : Finished test"
 	done
-
-	kill $DPID
-	sleep 5
+	
+	echo "Finished $fs tests"
+	#sudo kill $DPID
+	#sleep 5
 done

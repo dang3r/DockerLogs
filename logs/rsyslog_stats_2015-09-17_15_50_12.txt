@@ -1,0 +1,12 @@
+aufs PROTO
+rsyslog             0.00%               3.265 MB/3.856 GB   0.08%               3.848 kB/738 B
+rsyslog             0.00%               0 B/0 B             0.00%               0 B/0 B
+rsyslog             72.88%              18.78 MB/3.856 GB   0.49%               30.2 MB/780 B
+rsyslog             103.45%             28.09 MB/3.856 GB   0.73%               49.93 MB/780 B
+rsyslog             0.00%               0 B/0 B             0.00%               0 B/0 B
+rsyslog             151.66%             118.5 MB/3.856 GB   3.07%               240.5 MB/780 B
+rsyslog             166.27%             133.5 MB/3.856 GB   3.46%               270.7 MB/780 B
+rsyslog             146.10%             150.4 MB/3.856 GB   3.90%               304.3 MB/780 B
+rsyslog             163.24%             162.5 MB/3.856 GB   4.21%               328.1 MB/780 B
+rsyslog             0.00%               167.6 MB/3.856 GB   4.35%               338.7 MB/780 B
+rsyslog             0.00%               167.6 MB/3.856 GB   4.35%               338.7 MB/780 B
