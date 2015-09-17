@@ -5,10 +5,15 @@ MAINTAINER Daniel Cardoza <danielpcardoza@gmail.com>
 RUN apt-get -y update
 RUN apt-get -y install vim
 
+
+RUN echo 'ruleset(name="docker"){' >> /etc/rsyslog.conf
+RUN echo '	action(type="omfile" file="/var/log/docker.log")' >> /etc/rsyslog.conf
+RUN echo '}' >> /etc/rsyslog.conf
+
 RUN echo 'module(load="imudp")' >> /etc/rsyslog.conf
-RUN echo 'input(type="imudp" port="1337")' >> /etc/rsyslog.conf
+RUN echo 'input(type="imudp" port="1337" ruleset="docker")' >> /etc/rsyslog.conf
 RUN echo 'module(load="imtcp")' >> /etc/rsyslog.conf
-RUN echo 'input(type="imtcp" port="1338")' >> /etc/rsyslog.conf
+RUN echo 'input(type="imtcp" port="1338" ruleset="docker")' >> /etc/rsyslog.conf
 
 ENTRYPOINT ["/usr/sbin/rsyslogd"]
 CMD ["-n"]

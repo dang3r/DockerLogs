@@ -1,32 +1,39 @@
-#!/bin/bash 
+#!/bin/bash
 
 ## init ##
 STOCK_IMAGE="ubuntu"
 SIZE=1000000
 
+# 1 : container name
 track_stats() {
-	
+	NAME=$1
 	DATE=$(date +%Y-%m-%d_%H_%M_%S)
 	STATS_FILE=$1_stats_$DATE.txt
-	touch error.txt
+	
 	while true; do
-		docker stats --no-stream=true $1 >> $STATS_FILE 2>> error.txt
-		ERROR=$(wc -l < error.txt)
+		docker stats --no-stream=true $NAME | \
+				awk 'NR==2'  1>> $STATS_FILE 2>> /dev/null
+		( get_container_names	) | grep -q $NAME
+		ERROR=$?
 		if [ $ERROR -ne 0 ]; then
 			exit 0
 		fi
-		sleep 0.5
+		sleep 1
 	done
 }
 
-# Retrieve container IP given ID
+# 1 : container name
 get_container_ip() {
 	docker inspect --format '{{ .NetworkSettings.IPAddress }}' "$@"
 }
 
+get_container_names() {
+	docker inspect --format='{{.Name}}' $(docker ps -aq) 2> /dev/null
+}
+
 for IMAGE in rsyslog; do
 	
-	echo "Running $IMAGE container and initializating stat tracking"
+	echo "Running $IMAGE container and initializing stat tracking"
 	CID=$(docker run -d --name $IMAGE --privileged $IMAGE)
 	CIP=$(get_container_ip $CID)
 	track_stats $IMAGE &
@@ -55,14 +62,15 @@ for IMAGE in rsyslog; do
 	done
 
 	sleep 10
-	echo "$IMAGE : expected ~3000000"
+	echo "Expecting 3000003 messages for $IMAGE"
 	BASE="0"
+
+	# Retrieve, verify logs
 	if [ "$IMAGE" == "rsyslog" ]; then
 		while true; do
-				NEW=$(docker exec $CID wc -l /var/log/syslog | awk {'print $1 '})
-				echo "NEW=$NEW BASE=$BASE"
+				NEW=$(docker exec $CID wc -l /var/log/docker.log | awk {'print $1 '})
 				if [ "$NEW" == "$BASE" ]; then
-					echo "RETRIEVED $NEW"
+					echo "Retrieved $NEW messages for $IMAGE"
 					break
 				fi
 				BASE=$NEW
@@ -71,8 +79,7 @@ for IMAGE in rsyslog; do
 		docker exec $CID wc -l  < /var/log/logstash_ingest.log
 	fi
 
-	read -p "Press any key to continue.."
-	echo "Removing $IMAGE container."
+	echo "Removing $IMAGE containers."
 	docker rm -f $IMAGE
 	docker rm -f $(docker ps -aq)
 
