@@ -3,12 +3,16 @@
 ## init ##
 STOCK_IMAGE="ubuntu"
 SIZE=1000000
-
+rsyslog_log="/var/log/docker.log"
+logstash_log="/var/log/docker_ingest.log"
+DATA=$(date +%Y-%m-%d_%H_%M_%S)
+ 
+# Log the runtime metrics of a container to file
 # 1 : container name
 track_stats() {
 	NAME=$1
-	DATE=$(date +%Y-%m-%d_%H_%M_%S)
-	STATS_FILE=$1_stats_$DATE.txt
+	mkdir -p logs
+	STATS_FILE="logs/$1_stats_$DATE.txt"
 	
 	while true; do
 		docker stats --no-stream=true $NAME | \
@@ -22,24 +26,30 @@ track_stats() {
 	done
 }
 
+# Return the IP of a container
 # 1 : container name
 get_container_ip() {
 	docker inspect --format '{{ .NetworkSettings.IPAddress }}' "$@"
 }
 
+# Return the names of all present containers
 get_container_names() {
 	docker inspect --format='{{.Name}}' $(docker ps -aq) 2> /dev/null
 }
 
-for IMAGE in rsyslog; do
-	
-	echo "Running $IMAGE container and initializing stat tracking"
-	CID=$(docker run -d --name $IMAGE --privileged $IMAGE)
+echo "Removing host splunk directory"
+sudo rm -r /tmp/splunk
+
+for IMAGE in splunk rsyslog logstash; do
+	echo "$IMAGE : Run logging container."
+	CID=$(docker run -d --name $IMAGE -v /tmp/splunk/:/opt/splunk/:rw --privileged $IMAGE)
 	CIP=$(get_container_ip $CID)
-	track_stats $IMAGE &
 	sleep 5
+
+	echo "$IMAGE : Log runtime metrics"
+	track_stats $IMAGE &
 	
-	echo "Initializing tenant containers."
+	echo "$IMAGE : Run tenant containers."
 	for i in {0..2}; do
 		NAME="test_$IMAGE_$i"
 		docker run \
@@ -48,39 +58,45 @@ for IMAGE in rsyslog; do
 			--env CLIENT=$i \
 			--privileged \
 			--log-driver=syslog \
-			--log-opt syslog-address=tcp://$CIP:1338 \
+			--log-opt syslog-address=udp://$CIP:1337 \
 			$STOCK_IMAGE \
-			bash -c 'for i in {0..1000000}; do echo "Client$CLIENT_$i"; done'
+			bash -c 'for i in {0..1000000}; do echo "$HOSTNAME_message_$i"; done'
 	done
 
-	echo "Waiting for tenant containers to die."
+	echo "$IMAGE : Wait for tenant container termination."
 	while true; do
 			if [ $(docker ps -q | wc -l) -eq 1 ]; then
 					break
 			fi
-			sleep 5
+			sleep 1
 	done
-
-	sleep 10
+	
 	echo "Expecting 3000003 messages for $IMAGE"
 	BASE="0"
 
 	# Retrieve, verify logs
+	CMD=0
 	if [ "$IMAGE" == "rsyslog" ]; then
-		while true; do
-				NEW=$(docker exec $CID wc -l /var/log/docker.log | awk {'print $1 '})
+		CMD="docker exec $CID wc -l /var/log/docker.log | awk {'print \$1 '}"
+	elif [ "$IMAGE" == "logstash" ]; then
+		CMD="docker exec $CID wc -l /var/log/docker_ingest.log | awk {'print \$1 '}"
+	elif [ "$IMAGE" == "splunk" ]; then
+		CMD="docker exec $CID /opt/splunk/bin/splunk search 'source=\"udp:1337\" | stats count as Total' | tail -n 1"
+	fi
+
+	# Repeatedly check the number of log messages until it is static
+	while true; do
+				NEW=$(eval $CMD)
 				if [ "$NEW" == "$BASE" ]; then
-					echo "Retrieved $NEW messages for $IMAGE"
+					echo "$IMAGE : Retrieved $NEW messages for $IMAGE"
 					break
 				fi
 				BASE=$NEW
-		done
-	elif [ "$IMAGE" == "logstash" ]; then
-		docker exec $CID wc -l  < /var/log/logstash_ingest.log
-	fi
+				sleep 3
+	done
 
-	echo "Removing $IMAGE containers."
-	docker rm -f $IMAGE
-	docker rm -f $(docker ps -aq)
+	echo "$IMAGE : Removing all containers."
+	docker rm -f $IMAGE > /dev/null
+	docker rm -f $(docker ps -aq) > /dev/null
 
 done
