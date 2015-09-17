@@ -1,0 +1,17 @@
+aufs PROTO
+splunk              0.00%               0 B/0 B             0.00%               0 B/0 B
+splunk              206.42%             463.6 MB/3.856 GB   12.02%              22.11 MB/738 B
+splunk              126.81%             437.8 MB/3.856 GB   11.35%              36.85 MB/780 B
+splunk              175.97%             454.9 MB/3.856 GB   11.80%              56.33 MB/780 B
+splunk              209.12%             546.2 MB/3.856 GB   14.17%              172 MB/780 B
+splunk              267.25%             618.8 MB/3.856 GB   16.05%              225.4 MB/780 B
+splunk              0.00%               0 B/0 B             0.00%               0 B/0 B
+splunk              0.00%               0 B/0 B             0.00%               0 B/0 B
+splunk              0.00%               0 B/0 B             0.00%               0 B/0 B
+splunk              295.11%             656.6 MB/3.856 GB   17.03%              325.6 MB/822 B
+splunk              0.00%               0 B/0 B             0.00%               0 B/0 B
+splunk              99.55%              610.3 MB/3.856 GB   15.83%              341.7 MB/822 B
+splunk              101.73%             610 MB/3.856 GB     15.82%              341.7 MB/822 B
+splunk              0.54%               497.4 MB/3.856 GB   12.90%              341.7 MB/822 B
+splunk              98.71%              597.3 MB/3.856 GB   15.49%              341.7 MB/822 B
+splunk              98.88%              604.3 MB/3.856 GB   15.67%              341.7 MB/822 B

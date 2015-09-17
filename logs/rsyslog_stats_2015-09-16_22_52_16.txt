@@ -1,0 +1,12 @@
+rsyslog             0.00%               0 B/0 B             0.00%               0 B/0 B
+rsyslog             0.00%               0 B/0 B             0.00%               0 B/0 B
+rsyslog             0.00%               0 B/0 B             0.00%               0 B/0 B
+rsyslog             45.47%              25.74 MB/3.856 GB   0.67%               48.58 MB/780 B
+rsyslog             101.97%             39.75 MB/3.856 GB   1.03%               77.77 MB/780 B
+rsyslog             126.79%             97.68 MB/3.856 GB   2.53%               197.5 MB/822 B
+rsyslog             102.39%             107.9 MB/3.856 GB   2.80%               227.6 MB/822 B
+rsyslog             73.05%              121.8 MB/3.856 GB   3.16%               256.5 MB/822 B
+rsyslog             83.65%              143.2 MB/3.856 GB   3.71%               286.2 MB/822 B
+rsyslog             157.12%             151.8 MB/3.856 GB   3.94%               328.7 MB/864 B
+rsyslog             31.93%              167.5 MB/3.856 GB   4.34%               356.7 MB/864 B
+rsyslog             0.00%               167.5 MB/3.856 GB   4.34%               356.7 MB/864 B

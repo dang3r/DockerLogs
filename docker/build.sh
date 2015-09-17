@@ -16,6 +16,7 @@ for IMAGE in $IMAGES; do
   echo "Building image for $IMAGE"
 	docker build \
   -t $IMAGE \
+	-q \
   --force-rm=true \
 	--file="Dockerfile.$IMAGE" \
 	.

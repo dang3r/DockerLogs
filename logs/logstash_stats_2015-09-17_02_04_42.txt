@@ -1,0 +1,13 @@
+aufs PROTO
+logstash            0.00%               0 B/0 B             0.00%               0 B/0 B
+logstash            198.70%             187.1 MB/3.856 GB   4.85%               21.04 MB/780 B
+logstash            111.93%             190.9 MB/3.856 GB   4.95%               35.75 MB/780 B
+logstash            216.82%             203.4 MB/3.856 GB   5.27%               54.54 MB/780 B
+logstash            232.20%             236.3 MB/3.856 GB   6.13%               180.6 MB/780 B
+logstash            192.73%             249 MB/3.856 GB     6.46%               217.4 MB/780 B
+logstash            223.50%             257.9 MB/3.856 GB   6.69%               244.4 MB/780 B
+logstash            220.16%             268.2 MB/3.856 GB   6.95%               274.7 MB/780 B
+logstash            207.02%             277.9 MB/3.856 GB   7.21%               302.7 MB/822 B
+logstash            211.47%             285.1 MB/3.856 GB   7.39%               324.2 MB/822 B
+logstash            0.17%               291.1 MB/3.856 GB   7.55%               341.7 MB/822 B
+logstash            0.19%               291.1 MB/3.856 GB   7.55%               341.7 MB/822 B

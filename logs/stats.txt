@@ -1,0 +1,7 @@
+aufs tcp splunk 1995696 102
+aufs tcp splunk 2999961 140
+aufs tcp rsyslog 3000003 68
+aufs tcp logstash 2999994 269
+aufs udp splunk 1451552 75
+aufs udp rsyslog 2995684 56
+aufs udp logstash 286613 60
